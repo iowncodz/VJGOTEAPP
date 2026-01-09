@@ -8,8 +8,8 @@ if (!rootElement) {
   console.error("Critical Error: Root element not found.");
 } else {
   try {
-    // Show immediate progress
-    rootElement.innerHTML = '<div style="display:flex; justify-content:center; align-items:center; height:100vh; color:#F97316; font-weight:bold;">INITIALIZING VJ GOTE ENGINE...</div>';
+    // Clear initial state
+    rootElement.innerHTML = '<div style="display:flex; justify-content:center; align-items:center; height:100vh; color:#F97316; font-family:sans-serif; font-weight:900; letter-spacing:0.2em;">SYSTEM INITIALIZING...</div>';
     
     const root = ReactDOM.createRoot(rootElement);
     root.render(
@@ -20,11 +20,11 @@ if (!rootElement) {
   } catch (err) {
     console.error("Mounting Failed:", err);
     rootElement.innerHTML = `
-      <div style="padding: 40px; text-align: center; color: white; background: #1e293b; height: 100vh;">
+      <div style="padding: 40px; text-align: center; color: white; background: #1e293b; height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; font-family: sans-serif;">
         <h2 style="color: #F97316; font-size: 24px; font-weight: 900;">SYSTEM BOOT ERROR</h2>
-        <p style="margin-top: 10px; opacity: 0.6;">The browser failed to initialize the construction portal modules.</p>
-        <button onclick="window.location.reload()" style="margin-top: 20px; background: #F97316; color: white; border: none; padding: 10px 20px; border-radius: 8px; font-weight: bold; cursor: pointer;">
-          RETRY SYSTEM SYNC
+        <p style="margin-top: 10px; opacity: 0.6; max-width: 400px;">The construction portal failed to load. This usually happens due to a slow connection or an outdated browser.</p>
+        <button onclick="window.location.reload()" style="margin-top: 30px; background: #F97316; color: white; border: none; padding: 15px 30px; border-radius: 12px; font-weight: bold; cursor: pointer; text-transform: uppercase; letter-spacing: 0.1em;">
+          Retry System Sync
         </button>
       </div>
     `;
