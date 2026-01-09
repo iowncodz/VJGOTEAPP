@@ -1,0 +1,9 @@
+{
+  "name": "VJ Gote Brothers Management System",
+  "description": "A high-performance real-time construction management portal. Features PWA support, Gemini AI task generation, and persistent cloud-synced database.",
+  "requestFramePermissions": [
+    "geolocation",
+    "camera",
+    "microphone"
+  ]
+}

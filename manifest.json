@@ -1,0 +1,17 @@
+
+{
+  "short_name": "VJ Gote",
+  "name": "VJ Gote Brothers Management",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/4336/4336214.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#F97316",
+  "background_color": "#ffffff"
+}

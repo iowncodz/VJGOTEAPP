@@ -1,0 +1,1 @@
+// File removed to prevent unauthorized signups. Official staff creation is now inside the dashboard.
