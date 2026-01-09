@@ -5,16 +5,21 @@ import App from './App';
 const rootElement = document.getElementById('root');
 
 if (!rootElement) {
-  throw new Error("Failed to find the root element");
+  console.error("Root element not found in the DOM.");
+} else {
+  try {
+    rootElement.innerHTML = '';
+    const root = ReactDOM.createRoot(rootElement);
+    root.render(
+      <React.StrictMode>
+        <App />
+      </React.StrictMode>
+    );
+  } catch (err) {
+    console.error("React Mounting Error:", err);
+    rootElement.innerHTML = `<div style="padding: 40px; text-align: center; color: white;">
+      <h2 style="color: #F97316;">Portal Load Failed</h2>
+      <p>Error initializing application modules. Please check your browser connection.</p>
+    </div>`;
+  }
 }
-
-// Clear any existing content (like loading spinners or error messages)
-rootElement.innerHTML = '';
-
-const root = ReactDOM.createRoot(rootElement);
-
-root.render(
-  <React.StrictMode>
-    <App />
-  </React.StrictMode>
-);
