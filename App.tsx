@@ -1,73 +1,56 @@
-
-import React, { useState, useEffect } from 'react';
-import { User, UserRole, Task, TaskStatus, Instruction, AttendanceRecord, SalaryRecord } from './types';
+import React, { useState, useEffect, useCallback } from 'react';
+import { User, UserRole, Task, Instruction, AttendanceRecord, SalaryRecord } from './types';
 import LoginPage from './components/LoginPage';
 import Dashboard from './components/Dashboard';
 import { MOCK_USERS, MOCK_TASKS, MOCK_INSTRUCTIONS } from './constants';
 import { db } from './lib/db';
 
 const App: React.FC = () => {
-  const [currentUser, setCurrentUser] = useState<User | null>(null);
-  const [users, setUsers] = useState<User[]>([]);
-  const [tasks, setTasks] = useState<Task[]>([]);
-  const [instructions, setInstructions] = useState<Instruction[]>([]);
+  const [currentUser, setCurrentUser] = useState<User | null>(() => {
+    try {
+      const saved = localStorage.getItem('vjgote_session');
+      return saved ? JSON.parse(saved) : null;
+    } catch {
+      return null;
+    }
+  });
+  
+  const [users, setUsers] = useState<User[]>(MOCK_USERS);
+  const [tasks, setTasks] = useState<Task[]>(MOCK_TASKS);
+  const [instructions, setInstructions] = useState<Instruction[]>(MOCK_INSTRUCTIONS);
   const [attendance, setAttendance] = useState<AttendanceRecord[]>([]);
   const [salaries, setSalaries] = useState<SalaryRecord[]>([]);
-  const [isReady, setIsReady] = useState(false);
+  const [isBootstrapping, setIsBootstrapping] = useState(true);
+
+  const loadData = useCallback(async () => {
+    try {
+      const [u, t, i, a, s] = await Promise.all([
+        db.collection('users'),
+        db.collection('tasks'),
+        db.collection('instructions'),
+        db.collection('attendance'),
+        db.collection('salaries')
+      ]);
+      
+      if (u && u.length > 0) setUsers(u);
+      if (t && t.length > 0) setTasks(t);
+      if (i && i.length > 0) setInstructions(i);
+      if (a) setAttendance(a);
+      if (s) setSalaries(s);
+    } catch (error) {
+      console.error("Failed to load cloud data", error);
+    } finally {
+      setIsBootstrapping(false);
+    }
+  }, []);
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const [u, t, i, a, s] = await Promise.all([
-          db.collection('users'),
-          db.collection('tasks'),
-          db.collection('instructions'),
-          db.collection('attendance'),
-          db.collection('salaries')
-        ]);
-
-        if (u.length === 0) {
-          // Silent initialization of mock data
-          await Promise.all([
-            db.setCollection('users', MOCK_USERS),
-            db.setCollection('tasks', MOCK_TASKS),
-            db.setCollection('instructions', MOCK_INSTRUCTIONS)
-          ]);
-          setUsers(MOCK_USERS);
-          setTasks(MOCK_TASKS);
-          setInstructions(MOCK_INSTRUCTIONS);
-        } else {
-          setUsers(u);
-          setTasks(t);
-          setInstructions(i);
-          setAttendance(a);
-          setSalaries(s);
-        }
-      } catch (err) {
-        console.error("Data fetch error", err);
-      } finally {
-        setIsReady(true);
-      }
-    };
-
-    const unsubscribe = db.onSnapshot(() => {
-      fetchData();
-    });
-
-    fetchData();
-    
-    const savedUser = localStorage.getItem('vjgote_session');
-    if (savedUser) setCurrentUser(JSON.parse(savedUser));
-
+    loadData();
+    const unsubscribe = db.onSnapshot(loadData);
     return () => {
       unsubscribe();
     };
-  }, []);
-
-  const handleUpdateTasks = async (newTasks: Task[]) => await db.setCollection('tasks', newTasks);
-  const handleUpdateInstructions = async (newInstructions: Instruction[]) => await db.setCollection('instructions', newInstructions);
-  const handleUpdateAttendance = async (newAttendance: AttendanceRecord[]) => await db.setCollection('attendance', newAttendance);
-  const handleUpdateSalaries = async (newSalaries: SalaryRecord[]) => await db.setCollection('salaries', newSalaries);
+  }, [loadData]);
 
   const handleLogin = (user: User) => {
     setCurrentUser(user);
@@ -77,13 +60,16 @@ const App: React.FC = () => {
   const handleLogout = () => {
     setCurrentUser(null);
     localStorage.removeItem('vjgote_session');
+    window.location.reload(); // Hard refresh on logout to clear any memory state
   };
 
-  // We only show a very minimal spinner if the app is literally still parsing the JS
-  if (!isReady) {
+  if (isBootstrapping) {
     return (
-      <div className="min-h-screen bg-deepBlue flex items-center justify-center">
-        <div className="w-8 h-8 border-2 border-safetyOrange border-t-transparent rounded-full animate-spin"></div>
+      <div className="flex items-center justify-center min-h-screen bg-deepBlue">
+        <div className="flex flex-col items-center space-y-4">
+          <div className="w-10 h-10 border-4 border-safetyOrange border-t-transparent rounded-full animate-spin"></div>
+          <p className="text-white/40 text-[10px] font-black uppercase tracking-[0.3em]">VJ GOTE CLOUD SYNC</p>
+        </div>
       </div>
     );
   }
@@ -94,13 +80,13 @@ const App: React.FC = () => {
         user={currentUser} 
         users={users}
         tasks={tasks}
-        setTasks={handleUpdateTasks}
+        setTasks={(val) => db.setCollection('tasks', val)}
         instructions={instructions}
-        setInstructions={handleUpdateInstructions}
+        setInstructions={(val) => db.setCollection('instructions', val)}
         attendance={attendance}
-        setAttendance={handleUpdateAttendance}
+        setAttendance={(val) => db.setCollection('attendance', val)}
         salaries={salaries}
-        setSalaries={handleUpdateSalaries}
+        setSalaries={(val) => db.setCollection('salaries', val)}
         onLogout={handleLogout} 
       />
     );
