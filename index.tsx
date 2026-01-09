@@ -8,6 +8,7 @@ if (!rootElement) {
   throw new Error("Could not find root element to mount to");
 }
 
+// React 19 / ESM mount
 const root = ReactDOM.createRoot(rootElement);
 root.render(
   <React.StrictMode>
