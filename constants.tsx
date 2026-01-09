@@ -1,5 +1,3 @@
-
-import React from 'react';
 import { UserRole, TaskStatus, User, Task, AttendanceRecord, Instruction } from './types';
 
 export const MOCK_USERS: User[] = [
